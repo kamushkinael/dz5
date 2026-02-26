@@ -7,17 +7,33 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mydb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   web:
     build: .
+    restart: always
+    # Добавляем команду запуска Gunicorn
+    # app:app — это имя_файла:имя_переменной_flask
+    command: gunicorn --bind 0.0.0.0:5000 --workers 4 app:app
     environment:
       DATABASE_URL: postgresql://user:password@db:5432/mydb
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   nginx:
     image: nginx:alpine
