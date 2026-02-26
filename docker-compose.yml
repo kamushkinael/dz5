@@ -24,8 +24,6 @@ services:
   web:
     build: .
     restart: always
-    # Добавляем команду запуска Gunicorn
-    # app:app — это имя_файла:имя_переменной_flask
     command: gunicorn --bind 0.0.0.0:5000 --workers 4 app:app
     environment:
       DATABASE_URL: postgresql://user:password@db:5432/mydb
